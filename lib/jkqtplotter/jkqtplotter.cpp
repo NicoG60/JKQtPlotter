@@ -79,7 +79,8 @@ JKQTPlotter::JKQTPlotter(bool datastore_internal, QWidget* parent, JKQTPDatastor
     connect(plotter, SIGNAL(beforePlotScalingRecalculate()), this, SLOT(intBeforePlotScalingRecalculate()));
     connect(plotter, SIGNAL(zoomChangedLocally(double, double, double, double, JKQTBasePlotter*)), this, SLOT(pzoomChangedLocally(double, double, double, double, JKQTBasePlotter*)));
 
-    image=QImage(width(), height(), QImage::Format_ARGB32);
+    image=QImage(QSize(width(), height())*devicePixelRatioF(), QImage::Format_ARGB32);
+    image.setDevicePixelRatio(devicePixelRatioF());
     oldImage=image;
     imageNoOverlays=image;
 
@@ -1193,7 +1194,7 @@ void JKQTPlotter::paintEvent(QPaintEvent *event){
         int plotImageHeight=height();
 
         plotImageHeight=plotImageHeight-getPlotYOffset();
-        if (image.width()!=plotImageWidth || image.height()!=plotImageHeight)     {
+        if (qRound(image.width()/image.devicePixelRatio())!=plotImageWidth || qRound(image.height()/image.devicePixelRatio())!=plotImageHeight)     {
             p->drawImage(QRectF(0, getPlotYOffset(), plotImageWidth, plotImageHeight), image);
         } else {
             p->drawImage(QPoint(0, getPlotYOffset()), image);
@@ -1215,7 +1216,7 @@ void JKQTPlotter::resizeEvent(QResizeEvent *event) {
      int plotImageHeight=height();
 
      plotImageHeight=plotImageHeight-getPlotYOffset();
-     if (plotImageWidth != image.width() || plotImageHeight != image.height()) {
+     if (plotImageWidth != qRound(image.width()/image.devicePixelRatio()) || plotImageHeight != qRound(image.height()/image.devicePixelRatio())) {
          sizeChanged=true;
      }
      if (sizeChanged) {
@@ -1235,9 +1236,10 @@ void JKQTPlotter::delayedResizeEvent()
     plotImageHeight=plotImageHeight-getPlotYOffset();
     //qDebug()<<"resize: "<<plotImageWidth<<" x "<<plotImageHeight<<std::endl;
     bool sizeChanged=false;
-    if (plotImageWidth != image.width() || plotImageHeight != image.height()) {
+    if (plotImageWidth != qRound(image.width()/image.devicePixelRatio()) || plotImageHeight != qRound(image.height()/image.devicePixelRatio())) {
 
-        QImage newImage(QSize(plotImageWidth, plotImageHeight), QImage::Format_ARGB32);
+        QImage newImage(QSize(plotImageWidth, plotImageHeight)*devicePixelRatioF(), QImage::Format_ARGB32);
+        newImage.setDevicePixelRatio(devicePixelRatioF());
         image=newImage;
         sizeChanged=true;
     }
